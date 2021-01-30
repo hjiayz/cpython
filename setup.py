@@ -744,6 +744,8 @@ class PyBuildExt(build_ext):
                             is_gcc = True
                         elif line.startswith("clang version"):
                             is_clang = True
+                        elif line.startswith("Android"):
+                            is_clang = True
                         elif line.startswith("#include <...>"):
                             in_incdirs = True
                         elif line.startswith("End of search list"):
@@ -1657,7 +1659,11 @@ class PyBuildExt(build_ext):
                         version = line.split()[2]
                         break
             if version >= version_req:
+                if ('ANDROID_API_LEVEL'in self.config_h_vars):
+                    have_zlib = True
                 if (self.compiler.find_library_file(self.lib_dirs, 'z')):
+                    have_zlib = True
+                if (have_zlib):
                     if MACOS:
                         zlib_extra_link_args = ('-Wl,-search_paths_first',)
                     else:
@@ -1665,7 +1671,6 @@ class PyBuildExt(build_ext):
                     self.add(Extension('zlib', ['zlibmodule.c'],
                                        libraries=['z'],
                                        extra_link_args=zlib_extra_link_args))
-                    have_zlib = True
                 else:
                     self.missing.append('zlib')
             else:
